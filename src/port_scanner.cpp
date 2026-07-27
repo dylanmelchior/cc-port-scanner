@@ -11,42 +11,28 @@
 
 int main(int argc, char* argv[]){
 
-    if (argc != 3){
-        std::cout << "Must include a host and a port as arguments." << std::endl;
+    if (argc != 2){
+        std::cout << "Must include a host as an argument." << std::endl;
         return 1;
     }
-
-    int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
     sockaddr_in hostAddress;
     hostAddress.sin_family = AF_INET;
     inet_pton(AF_INET, argv[1], &hostAddress.sin_addr);
 
-    try{
-        int port = std::stoi(argv[2]);
-        hostAddress.sin_port = htons(static_cast<uint16_t>(port));
-    }
-    catch (const std::invalid_argument&) {
-        std::cerr << "Port argument invalid: not a number." << std::endl;
-        return EXIT_FAILURE;
-    }
-    catch (const std::out_of_range&) {
-        std::cerr << "Port argument invalid: too large." << std::endl;
-        return EXIT_FAILURE;
-    }
+    for(int i = 1; i < 65536; i++){
+        int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+        hostAddress.sin_port = htons(i);
+        // sending connection request
+        if(connect(clientSocket, (struct sockaddr*)&hostAddress, sizeof(hostAddress)) == 0){
+            std::cout << "Connected on port: " << i << std::endl;
+        }
+        else {
+            perror("connect: ");
+        }
 
-    // sending connection request
-    if(connect(clientSocket, (struct sockaddr*)&hostAddress, sizeof(hostAddress)) == -1){
-        perror("connect");
-        return EXIT_FAILURE;
+        // closing socket
+        close(clientSocket);
     }
-    else{        
-        std::cout << "Connected successfully" << std::endl;
-    }
-
-    // closing socket
-    close(clientSocket);
-
     return 0;
-
 }
