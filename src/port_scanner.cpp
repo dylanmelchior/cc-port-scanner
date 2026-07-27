@@ -16,17 +16,30 @@ int main(int argc, char* argv[]){
 
     sockaddr_in hostAddress;
     hostAddress.sin_family = AF_INET;
-    hostAddress.sin_port = htons(80);
     inet_pton(AF_INET, argv[1], &hostAddress.sin_addr);
+
+    try{
+        int port = std::stoi(argv[2]);
+        hostAddress.sin_port = htons(static_cast<uint16_t>(port));
+    }
+    catch (const std::invalid_argument&) {
+        std::cerr << "Port argument invalid: not a number." << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch (const std::out_of_range&) {
+        std::cerr << "Port argument invalid: too large." << std::endl;
+        return EXIT_FAILURE;
+    }
 
     // sending connection request
     if(connect(clientSocket, (struct sockaddr*)&hostAddress, sizeof(hostAddress)) == -1){
         perror("connect");
         return EXIT_FAILURE;
     }
+    else{        
+        std::cout << "Connected successfully" << std::endl;
+    }
 
-    std::cout << "Connected successfully";
-    
     // closing socket
     close(clientSocket);
 
