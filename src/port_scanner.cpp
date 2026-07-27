@@ -1,3 +1,7 @@
+/*
+    A simple port scanner. 
+*/
+
 #include <cstring>
 #include <iostream>
 #include <netinet/in.h>
